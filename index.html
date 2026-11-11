@@ -210,6 +210,10 @@
         <h1 class="text-2xl font-black text-white">Administración SAMANTHA LA HACKER</h1>
       </div>
       <div class="flex items-center gap-2">
+        <button onclick="openModal('changePinModal')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold rounded-xl transition border border-slate-700 flex items-center gap-1.5 active:scale-95" title="Cambiar clave de acceso">
+          <i data-lucide="key-round" class="w-4 h-4 text-purple-400"></i>
+          Cambiar PIN
+        </button>
         <button onclick="openModal('addStockModal')" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow flex items-center gap-2 active:scale-95">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
           Subir Cuentas al Stock
@@ -697,17 +701,51 @@
           <i data-lucide="lock" class="w-5 h-5"></i>
         </div>
         <h3 class="font-bold text-white text-base">Acceso Administrador</h3>
-        <p class="text-slate-400 text-xs">Clave de seguridad (Default: <span class="font-mono text-cyan-400">1234</span>)</p>
+        <p class="text-slate-400 text-xs">Ingresa tu clave de seguridad</p>
       </div>
 
       <div>
-        <input type="password" id="inputAdminPin" maxlength="6" placeholder="••••" class="w-full text-center tracking-widest text-lg font-mono py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-purple-500">
+        <input type="password" id="inputAdminPin" maxlength="10" placeholder="••••" class="w-full text-center tracking-widest text-lg font-mono py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-purple-500">
       </div>
 
       <div class="flex gap-2">
         <button onclick="closeModal('adminPinModal')" class="flex-1 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl hover:bg-slate-700">Cancelar</button>
         <button onclick="validateAdminPin()" class="flex-1 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl">Entrar</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Change Admin PIN -->
+  <div id="changePinModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-purple-500/50 w-full max-w-xs rounded-2xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+          <i data-lucide="key-round" class="w-4 h-4 text-cyan-400"></i>
+          Cambiar PIN Admin
+        </h3>
+        <button onclick="closeModal('changePinModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="changePinForm" onsubmit="handleChangePinSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">PIN Actual:</label>
+          <input type="password" id="inputOldPin" required placeholder="PIN actual" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono text-center tracking-widest focus:outline-none focus:border-purple-500">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Nuevo PIN:</label>
+          <input type="password" id="inputNewPin" required maxlength="10" placeholder="Nuevo PIN" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono text-center tracking-widest focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Confirmar Nuevo PIN:</label>
+          <input type="password" id="inputConfirmPin" required maxlength="10" placeholder="Repite el nuevo PIN" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono text-center tracking-widest focus:outline-none focus:border-cyan-400">
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-bold rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-1.5 mt-2">
+          <i data-lucide="check" class="w-4 h-4"></i> Guardar Nuevo PIN
+        </button>
+      </form>
     </div>
   </div>
 
@@ -743,6 +781,7 @@
 
     let PLATFORMS_CONFIG = { ...DEFAULT_PLATFORMS };
     let adminUnlocked = false;
+    let adminPin = '1234';
 
     let state = {
       currentClient: { id: 'cli_01', name: 'Cliente Principal', phone: '5212291234567', balance: 70 },
@@ -787,6 +826,7 @@
           const parsed = JSON.parse(raw);
           if (parsed.platforms) PLATFORMS_CONFIG = parsed.platforms;
           if (parsed.state) state = parsed.state;
+          if (parsed.adminPin) adminPin = parsed.adminPin;
         }
       } catch (e) {
         console.warn('Usando configuración por defecto', e);
@@ -797,7 +837,8 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           platforms: PLATFORMS_CONFIG,
-          state: state
+          state: state,
+          adminPin: adminPin
         }));
       } catch (e) {
         console.error('Error guardando en almacenamiento local', e);
@@ -824,15 +865,43 @@
 
     function validateAdminPin() {
       const pin = document.getElementById('inputAdminPin').value;
-      if (pin === '1234') {
+      if (pin === adminPin) {
         adminUnlocked = true;
         closeModal('adminPinModal');
         document.getElementById('inputAdminPin').value = '';
         switchView('admin');
         showToast('Acceso como Administrador concedido', 'success');
       } else {
-        showToast('PIN incorrecto. (Default: 1234)', 'error');
+        showToast('PIN incorrecto.', 'error');
       }
+    }
+
+    function handleChangePinSubmit(e) {
+      e.preventDefault();
+      const oldPin = document.getElementById('inputOldPin').value.trim();
+      const newPin = document.getElementById('inputNewPin').value.trim();
+      const confirmPin = document.getElementById('inputConfirmPin').value.trim();
+
+      if (oldPin !== adminPin) {
+        showToast('El PIN actual no coincide', 'error');
+        return;
+      }
+
+      if (newPin.length < 4) {
+        showToast('El nuevo PIN debe tener al menos 4 caracteres', 'warning');
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        showToast('Los nuevos PINs no coinciden', 'error');
+        return;
+      }
+
+      adminPin = newPin;
+      saveData();
+      document.getElementById('changePinForm').reset();
+      closeModal('changePinModal');
+      showToast('¡PIN de administrador actualizado con éxito!', 'success');
     }
 
     function populateStockPlatformSelect() {
