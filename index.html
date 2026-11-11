@@ -95,15 +95,33 @@
         </button>
       </div>
 
-      <!-- Client Balance -->
+      <!-- Client Auth & Balance Bar -->
       <div class="flex items-center gap-3">
-        <div class="bg-gradient-to-r from-purple-900/40 to-slate-900 border border-purple-500/30 rounded-xl px-3 py-1.5 flex items-center gap-2">
-          <div class="text-right">
-            <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Mi Saldo</p>
-            <p id="navBalanceDisplay" class="text-sm sm:text-base font-bold text-emerald-400 tracking-tight">$0.00 MXN</p>
+        <!-- Logged Out State -->
+        <div id="navGuestBox" class="flex items-center gap-2">
+          <button onclick="openModal('loginModal')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5">
+            <i data-lucide="log-in" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>Iniciar Sesión</span>
+          </button>
+          <button onclick="openModal('registerModal')" class="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
+            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+            <span>Registrarse</span>
+          </button>
+        </div>
+
+        <!-- Logged In State -->
+        <div id="navUserBox" class="hidden items-center gap-2 sm:gap-3">
+          <div class="bg-gradient-to-r from-purple-900/40 to-slate-900 border border-purple-500/30 rounded-xl px-3 py-1.5 flex items-center gap-2">
+            <div class="text-right">
+              <p id="navClientNameDisplay" class="text-[10px] text-purple-300 font-bold truncate max-w-[100px] sm:max-w-[140px]">Mi Cuenta</p>
+              <p id="navBalanceDisplay" class="text-xs sm:text-sm font-black text-emerald-400 tracking-tight">$0.00 MXN</p>
+            </div>
+            <button onclick="openModal('rechargeModal')" class="p-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-transform active:scale-95 shadow" title="Recargar saldo por SPEI">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
-          <button onclick="openModal('rechargeModal')" class="p-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-transform active:scale-95 shadow" title="Recargar saldo por SPEI">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+          <button onclick="handleLogout()" class="p-2 bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-400 rounded-xl transition border border-slate-700" title="Cerrar Sesión">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
@@ -810,6 +828,88 @@
     </div>
   </div>
 
+  <!-- Modal: Client Login -->
+  <div id="loginModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-cyan-500/40 w-full max-w-sm rounded-2xl p-6 shadow-2xl relative space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-extrabold text-lg text-white flex items-center gap-2">
+          <i data-lucide="log-in" class="w-5 h-5 text-cyan-400"></i>
+          Iniciar Sesión
+        </h3>
+        <button onclick="closeModal('loginModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-3.5 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Correo o Usuario:</label>
+          <input type="text" id="loginUsername" required placeholder="tu-correo@gmail.com o usuario" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-cyan-400">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Contraseña:</label>
+          <input type="password" id="loginPassword" required placeholder="Tu contraseña" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-cyan-400">
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 mt-2">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Entrar a Mi Cuenta
+        </button>
+
+        <p class="text-center text-slate-400 text-xs pt-1">
+          ¿No tienes cuenta todavía? 
+          <button type="button" onclick="closeModal('loginModal'); openModal('registerModal')" class="text-cyan-400 hover:underline font-bold">Regístrate aquí</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Client Register -->
+  <div id="registerModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-purple-500/40 w-full max-w-sm rounded-2xl p-6 shadow-2xl relative space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-extrabold text-lg text-white flex items-center gap-2">
+          <i data-lucide="user-plus" class="w-5 h-5 text-purple-400"></i>
+          Crear Cuenta de Cliente
+        </h3>
+        <button onclick="closeModal('registerModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="registerForm" onsubmit="handleRegisterSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Nombre Completo o Apodo:</label>
+          <input type="text" id="regName" required placeholder="ej. Carlos Mendoza" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-purple-400">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Correo Electrónico o Usuario:</label>
+          <input type="text" id="regEmail" required placeholder="ej. carlos@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-purple-400">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">WhatsApp (para recordatorios y SPEI):</label>
+          <input type="tel" id="regPhone" required placeholder="ej. 5212291234567" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-purple-400">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Crear Contraseña:</label>
+          <input type="password" id="regPassword" required placeholder="Mínimo 4 caracteres" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-purple-400">
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 mt-2">
+          <i data-lucide="check" class="w-4 h-4"></i> Registrarme Ahora
+        </button>
+
+        <p class="text-center text-slate-400 text-xs pt-1">
+          ¿Ya tienes cuenta creada? 
+          <button type="button" onclick="closeModal('registerModal'); openModal('loginModal')" class="text-purple-400 hover:underline font-bold">Inicia sesión</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="mt-auto border-t border-slate-800/80 bg-[#0d1322] py-6 text-center text-xs text-slate-500">
     <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -843,14 +943,15 @@
     let PLATFORMS_CONFIG = { ...DEFAULT_PLATFORMS };
     let adminUnlocked = false;
     let adminPin = '1234';
+    let currentCategoryFilter = 'all';
 
     let state = {
-      currentClient: { id: 'cli_01', name: 'Cliente Principal', phone: '5212291234567', balance: 70 },
+      currentClient: null, // null cuando nadie ha iniciado sesión
       clients: [
-        { id: 'cli_01', name: 'Cliente Principal (Tú)', phone: '5212291234567', balance: 70, totalSpent: 105 },
-        { id: 'cli_02', name: 'Valeria Gómez', phone: '5212287654321', balance: 35, totalSpent: 140 },
-        { id: 'cli_03', name: 'Mateo Morales', phone: '5215541239874', balance: 0, totalSpent: 70 },
-        { id: 'cli_04', name: 'Andrea Ortiz', phone: '5218119874561', balance: 10, totalSpent: 210 }
+        { id: 'cli_01', name: 'Cliente Principal', email: 'demo@samantha.com', phone: '5212291234567', pass: '1234', balance: 70, totalSpent: 105 },
+        { id: 'cli_02', name: 'Valeria Gómez', email: 'valeria@gmail.com', phone: '5212287654321', pass: '1234', balance: 35, totalSpent: 140 },
+        { id: 'cli_03', name: 'Mateo Morales', email: 'mateo@hotmail.com', phone: '5215541239874', pass: '1234', balance: 0, totalSpent: 70 },
+        { id: 'cli_04', name: 'Andrea Ortiz', email: 'andrea@gmail.com', phone: '5218119874561', pass: '1234', balance: 10, totalSpent: 210 }
       ],
       stock: [
         { id: 'stk_1', platform: 'disney', email: 'disney.vip01@streamvault.com', pass: 'Vault#2026', profile: 'Perfil 1', pin: '4512', days: 30, type: 'Perfil Privado con PIN', status: 'available' },
@@ -906,15 +1007,167 @@
       }
     }
 
+    function populateStockPlatformSelect() {
+      const select = document.getElementById('stockPlatform');
+      if (!select) return;
+      select.innerHTML = '';
+      Object.values(PLATFORMS_CONFIG).forEach(plat => {
+        const option = document.createElement('option');
+        option.value = plat.id;
+        option.textContent = `${plat.name} ($${plat.price} MXN)`;
+        select.appendChild(option);
+      });
+    }
+
+    function filterCatalog(category) {
+      currentCategoryFilter = category;
+      document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-purple-600', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active', 'bg-purple-600', 'text-white');
+        event.currentTarget.classList.remove('text-slate-400');
+      }
+      renderCatalog();
+    }
+
+    function deletePlatform(id) {
+      if (!PLATFORMS_CONFIG[id]) return;
+      const name = PLATFORMS_CONFIG[id].name;
+      delete PLATFORMS_CONFIG[id];
+      saveData();
+      populateStockPlatformSelect();
+      renderCatalog();
+      renderAdminPlatformsTable();
+      showToast(`Plataforma ${name} eliminada del catálogo`, 'info');
+    }
+
+    function exportDataBackup() {
+      const backupData = JSON.stringify({
+        platforms: PLATFORMS_CONFIG,
+        state: state,
+        adminPin: adminPin,
+        exportDate: new Date().toISOString()
+      }, null, 2);
+
+      const blob = new Blob([backupData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_streaming_samantha_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Copia de respaldo descargada', 'success');
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedData();
       populateStockPlatformSelect();
       lucide.createIcons();
-      updateBalancesDisplay();
+      updateAuthUI();
       renderCatalog();
       renderMySubscriptions();
       renderAdminAll();
     });
+
+    // SISTEMA DE AUTENTICACIÓN DE CLIENTES
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const phone = document.getElementById('regPhone').value.trim();
+      const pass = document.getElementById('regPassword').value.trim();
+
+      if (state.clients.some(c => c.email.toLowerCase() === email)) {
+        showToast('Ese correo o usuario ya está registrado. Inicia sesión.', 'warning');
+        return;
+      }
+
+      const newClient = {
+        id: 'cli_' + Date.now(),
+        name: name,
+        email: email,
+        phone: phone,
+        pass: pass,
+        balance: 0,
+        totalSpent: 0
+      };
+
+      state.clients.push(newClient);
+      state.currentClient = newClient;
+      saveData();
+
+      document.getElementById('registerForm').reset();
+      closeModal('registerModal');
+      updateAuthUI();
+      renderAdminUsers();
+      renderCatalog();
+      renderMySubscriptions();
+      showToast(`¡Bienvenido(a), ${name}! Tu cuenta fue creada exitosamente.`, 'success');
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+      const pass = document.getElementById('loginPassword').value.trim();
+
+      const found = state.clients.find(c => 
+        (c.email.toLowerCase() === username || c.name.toLowerCase() === username || c.phone === username) && 
+        c.pass === pass
+      );
+
+      if (!found) {
+        showToast('Usuario o contraseña incorrectos', 'error');
+        return;
+      }
+
+      state.currentClient = found;
+      saveData();
+      document.getElementById('loginForm').reset();
+      closeModal('loginModal');
+      updateAuthUI();
+      renderCatalog();
+      renderMySubscriptions();
+      showToast(`¡Hola de nuevo, ${found.name}!`, 'success');
+    }
+
+    function handleLogout() {
+      state.currentClient = null;
+      saveData();
+      updateAuthUI();
+      renderCatalog();
+      renderMySubscriptions();
+      showToast('Sesión cerrada correctamente', 'info');
+    }
+
+    function updateAuthUI() {
+      const guestBox = document.getElementById('navGuestBox');
+      const userBox = document.getElementById('navUserBox');
+      const nameDisplay = document.getElementById('navClientNameDisplay');
+
+      if (state.currentClient) {
+        guestBox.classList.add('hidden');
+        userBox.classList.remove('hidden');
+        userBox.classList.add('flex');
+        if (nameDisplay) nameDisplay.innerText = state.currentClient.name;
+      } else {
+        guestBox.classList.remove('hidden');
+        userBox.classList.add('hidden');
+        userBox.classList.remove('flex');
+      }
+      updateBalancesDisplay();
+      lucide.createIcons();
+    }
+
+    function updateBalancesDisplay() {
+      const currentBalance = state.currentClient ? state.currentClient.balance : 0;
+      const b = `$${currentBalance.toFixed(2)} MXN`;
+      const navDisplay = document.getElementById('navBalanceDisplay');
+      const heroDisplay = document.getElementById('heroBalanceDisplay');
+      if (navDisplay) navDisplay.innerText = b;
+      if (heroDisplay) heroDisplay.innerText = b;
+    }
 
     function requestAdminAccess() {
       if (adminUnlocked) {
@@ -1182,11 +1435,31 @@
         return p.category === currentCategoryFilter;
       });
 
+      const userBalance = state.currentClient ? state.currentClient.balance : 0;
+
       platforms.forEach(p => {
         const availableStock = state.stock.filter(s => s.platform === p.id && s.status === 'available').length;
-        const canBuy = state.currentClient.balance >= p.price && availableStock > 0;
+        const canBuy = state.currentClient && userBalance >= p.price && availableStock > 0;
         const iconName = p.icon || 'tv';
         const hasCustomImg = p.customImage && p.customImage.trim().length > 0;
+
+        let buttonText = 'Comprar y Recibir';
+        let buttonClass = 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md active:scale-95';
+        let buttonIcon = 'zap';
+
+        if (availableStock === 0) {
+          buttonText = 'Sin Stock';
+          buttonClass = 'bg-slate-800 text-slate-500 cursor-not-allowed';
+          buttonIcon = 'slash';
+        } else if (!state.currentClient) {
+          buttonText = 'Iniciar Sesión para Comprar';
+          buttonClass = 'bg-purple-950/70 text-purple-300 border border-purple-500/50 hover:bg-purple-900/60';
+          buttonIcon = 'log-in';
+        } else if (userBalance < p.price) {
+          buttonText = 'Recargar para Comprar';
+          buttonClass = 'bg-amber-950/40 text-amber-300 border border-amber-500/40 hover:bg-amber-900/50';
+          buttonIcon = 'wallet';
+        }
 
         const card = document.createElement('div');
         card.className = "bg-slate-900/80 border border-slate-800 rounded-2xl p-5 hover:border-purple-500/50 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden";
@@ -1223,15 +1496,9 @@
           </div>
 
           <div class="pt-4 mt-2 border-t border-slate-800/80">
-            <button onclick="handlePurchase('${p.id}')" ${!canBuy ? (availableStock === 0 ? 'disabled' : '') : ''} class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
-              availableStock === 0 
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : (state.currentClient.balance < p.price 
-                    ? 'bg-purple-950/60 text-purple-300 border border-purple-600/50 hover:bg-purple-900/60' 
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md active:scale-95')
-            }">
-              <i data-lucide="${availableStock === 0 ? 'slash' : (state.currentClient.balance < p.price ? 'plus-circle' : 'zap')}" class="w-4 h-4"></i>
-              <span>${availableStock === 0 ? 'Sin Stock' : (state.currentClient.balance < p.price ? 'Recargar para Comprar' : 'Comprar y Recibir')}</span>
+            <button onclick="handlePurchase('${p.id}')" ${availableStock === 0 ? 'disabled' : ''} class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${buttonClass}">
+              <i data-lucide="${buttonIcon}" class="w-4 h-4"></i>
+              <span>${buttonText}</span>
             </button>
           </div>
         `;
@@ -1241,6 +1508,12 @@
     }
 
     function handlePurchase(platformId) {
+      if (!state.currentClient) {
+        showToast('Por favor regístrate o inicia sesión para comprar', 'warning');
+        openModal('loginModal');
+        return;
+      }
+
       const p = PLATFORMS_CONFIG[platformId];
       if (!p) return;
 
@@ -1353,6 +1626,23 @@
     function renderMySubscriptions() {
       const list = document.getElementById('mySubscriptionsList');
       if (!list) return;
+
+      if (!state.currentClient) {
+        document.getElementById('userSubCount').innerText = `0 Cuentas`;
+        list.innerHTML = `
+          <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-8 text-center text-slate-400 text-xs space-y-3">
+            <i data-lucide="lock" class="w-8 h-8 mx-auto text-purple-400"></i>
+            <p class="font-medium text-slate-300">Inicia sesión o regístrate para ver y gestionar tus cuentas activas.</p>
+            <div class="flex justify-center gap-2">
+              <button onclick="openModal('loginModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold">Iniciar Sesión</button>
+              <button onclick="openModal('registerModal')" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold">Crear Cuenta</button>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
       const myOrders = state.sales.filter(s => s.clientId === state.currentClient.id);
       document.getElementById('userSubCount').innerText = `${myOrders.length} Cuentas`;
 
@@ -1404,14 +1694,6 @@
         list.appendChild(card);
       });
       lucide.createIcons();
-    }
-
-    function updateBalancesDisplay() {
-      const b = `$${state.currentClient.balance.toFixed(2)} MXN`;
-      const navDisplay = document.getElementById('navBalanceDisplay');
-      const heroDisplay = document.getElementById('heroBalanceDisplay');
-      if (navDisplay) navDisplay.innerText = b;
-      if (heroDisplay) heroDisplay.innerText = b;
     }
 
     function switchView(view) {
@@ -1578,7 +1860,10 @@
             <div class="w-7 h-7 rounded-full bg-purple-600/30 text-purple-300 flex items-center justify-center font-bold text-xs">
               ${client.name.charAt(0)}
             </div>
-            ${client.name}
+            <div>
+              <span>${client.name}</span>
+              <span class="block text-[10px] text-slate-400">${client.email || 'Sin correo'}</span>
+            </div>
           </td>
           <td class="p-3 text-slate-400 font-mono">${client.phone}</td>
           <td class="p-3 font-bold text-emerald-400 font-mono">$${client.balance.toFixed(2)} MXN</td>
