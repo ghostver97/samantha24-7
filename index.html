@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAMANTHA LA HACKER - Cuentas Streaming 24/7</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            hacker: {
+              cyan: '#00f2fe',
+              neon: '#4facfe',
+              purple: '#a855f7',
+              pink: '#f43f5e',
+              dark: '#070a13',
+              card: '#0f172a',
+              border: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b0f19;
+      color: #f3f4f6;
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px -5px rgba(124, 58, 237, 0.4);
+    }
+    .neon-cyan {
+      box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.35);
+    }
+    .neon-green {
+      box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.35);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #242f49;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100 antialiased selection:bg-purple-600 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Main Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('client')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 via-purple-600 to-pink-500 p-[2px] flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <div class="w-full h-full bg-[#070a13] rounded-[10px] flex items-center justify-center">
+            <i data-lucide="terminal" class="w-5 h-5 text-cyan-400"></i>
+          </div>
+        </div>
+        <div>
+          <span class="text-base sm:text-lg font-black tracking-wider bg-gradient-to-r from-cyan-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">SAMANTHA LA HACKER</span>
+          <span class="hidden sm:inline-block ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded">STREAMING 24/7</span>
+        </div>
+      </div>
+
+      <!-- Center View Switcher (Client vs Admin) -->
+      <div class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 shadow-inner">
+        <button id="viewBtnClient" onclick="switchView('client')" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>Tienda</span>
+        </button>
+        <button id="viewBtnAdmin" onclick="requestAdminAccess()" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-slate-200">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Panel Admin</span>
+          <span id="badgePendingAlerts" class="hidden w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+        </button>
+      </div>
+
+      <!-- Client Balance -->
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-r from-purple-900/40 to-slate-900 border border-purple-500/30 rounded-xl px-3 py-1.5 flex items-center gap-2">
+          <div class="text-right">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Mi Saldo</p>
+            <p id="navBalanceDisplay" class="text-sm sm:text-base font-bold text-emerald-400 tracking-tight">$0.00 MXN</p>
+          </div>
+          <button onclick="openModal('rechargeModal')" class="p-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-transform active:scale-95 shadow" title="Recargar saldo por SPEI">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!--               CLIENT VIEW                  -->
+  <!-- ========================================== -->
+  <main id="clientView" class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    
+    <!-- Hero / Promo & Balance Banner -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-950/70 via-purple-950/40 to-slate-900/90 border border-purple-500/20 p-6 sm:p-8 neon-glow">
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-10 -top-10 w-64 h-64 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-medium">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400"></i>
+            Sistema de Auto-despacho Instantáneo
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Tus Cuentas Streaming al Instante, <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">24/7 sin esperas</span>.
+          </h1>
+          <p class="text-sm sm:text-base text-slate-300">
+            Transfiere vía SPEI, tu saldo se abona en minutos y el sistema te entrega correo, contraseña y PIN al instante con garantía.
+          </p>
+        </div>
+
+        <!-- Quick Action Card -->
+        <div class="w-full md:w-auto bg-slate-900/80 backdrop-blur-md p-4 rounded-xl border border-slate-700/60 shadow-xl flex flex-col sm:flex-row md:flex-col gap-3 min-w-[240px]">
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">Saldo disponible:</span>
+            <span id="heroBalanceDisplay" class="text-2xl font-black text-emerald-400">$0.00 MXN</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openModal('rechargeModal')" class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95">
+              <i data-lucide="wallet" class="w-3.5 h-3.5"></i>
+              Recargar Saldo (SPEI)
+            </button>
+            <button onclick="scrollToSection('mySubscriptionsSection')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition border border-slate-700" title="Ver mis cuentas">
+              <i data-lucide="key" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Catalog of Platforms -->
+    <section class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="layout-grid" class="w-6 h-6 text-purple-400"></i>
+            Catálogo de Plataformas
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400">Elige la plataforma y adquiere tu perfil o cuenta completa en segundos.</p>
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs overflow-x-auto">
+          <button onclick="filterCatalog('all')" class="cat-filter-btn active px-3 py-1.5 rounded-lg font-medium text-white bg-purple-600 transition">Todos</button>
+          <button onclick="filterCatalog('video')" class="cat-filter-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Series y Películas</button>
+          <button onclick="filterCatalog('music')" class="cat-filter-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Música & TV</button>
+        </div>
+      </div>
+
+      <!-- Catalog Cards Grid -->
+      <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+    </section>
+
+    <!-- My Subscriptions Section -->
+    <section id="mySubscriptionsSection" class="pt-6 border-t border-slate-800/80 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="badge-check" class="w-6 h-6 text-cyan-400"></i>
+            Mis Cuentas y Suscripciones
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400">Historial de accesos, credenciales entregadas y días restantes.</p>
+        </div>
+        <span id="userSubCount" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">0 Cuentas</span>
+      </div>
+
+      <div id="mySubscriptionsList" class="space-y-3"></div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!--               ADMIN PANEL                  -->
+  <!-- ========================================== -->
+  <main id="adminView" class="hidden flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    
+    <!-- Admin Top Banner / Stats -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-5 rounded-2xl">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-xs font-semibold uppercase tracking-wider mb-1">
+          <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+          Panel Maestro de Operaciones
+        </div>
+        <h1 class="text-2xl font-black text-white">Administración SAMANTHA LA HACKER</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openModal('addStockModal')" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow flex items-center gap-2 active:scale-95">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          Subir Cuentas al Stock
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Metric Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-slate-900/70 border border-slate-800/80 p-4 rounded-xl">
+        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+          <span>Ingresos Totales</span>
+          <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div id="adminStatRevenue" class="text-xl sm:text-2xl font-black text-emerald-400">$0 MXN</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 p-4 rounded-xl">
+        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+          <span>Cuentas Vendidas</span>
+          <i data-lucide="shopping-cart" class="w-4 h-4 text-purple-400"></i>
+        </div>
+        <div id="adminStatSalesCount" class="text-xl sm:text-2xl font-black text-white">0</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 p-4 rounded-xl">
+        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+          <span>Stock Disponible 24/7</span>
+          <i data-lucide="server" class="w-4 h-4 text-cyan-400"></i>
+        </div>
+        <div id="adminStatStockCount" class="text-xl sm:text-2xl font-black text-cyan-400">0</div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800/80 p-4 rounded-xl">
+        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
+          <span>Por Vencer (3 días)</span>
+          <i data-lucide="bell-ring" class="w-4 h-4 text-amber-400"></i>
+        </div>
+        <div id="adminStatAlertsCount" class="text-xl sm:text-2xl font-black text-amber-400">0</div>
+      </div>
+    </div>
+
+    <!-- Admin Tabs -->
+    <div class="border-b border-slate-800 flex gap-4 overflow-x-auto text-sm">
+      <button onclick="switchAdminTab('prices')" id="tabBtnPrices" class="admin-tab active pb-3 font-semibold text-purple-400 border-b-2 border-purple-500 flex items-center gap-2 shrink-0">
+        <i data-lucide="tags" class="w-4 h-4"></i> Precios & Plataformas (Catálogo)
+      </button>
+      <button onclick="switchAdminTab('stock')" id="tabBtnStock" class="admin-tab pb-3 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent flex items-center gap-2 shrink-0">
+        <i data-lucide="layers" class="w-4 h-4"></i> Stock de Cuentas (24/7)
+      </button>
+      <button onclick="switchAdminTab('users')" id="tabBtnUsers" class="admin-tab pb-3 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent flex items-center gap-2 shrink-0">
+        <i data-lucide="users" class="w-4 h-4"></i> Clientes & Recargas SPEI
+      </button>
+      <button onclick="switchAdminTab('reminders')" id="tabBtnReminders" class="admin-tab pb-3 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent flex items-center gap-2 shrink-0">
+        <i data-lucide="bell" class="w-4 h-4"></i> Recordatorios & Cobros WhatsApp
+      </button>
+      <button onclick="switchAdminTab('sales')" id="tabBtnSales" class="admin-tab pb-3 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent flex items-center gap-2 shrink-0">
+        <i data-lucide="history" class="w-4 h-4"></i> Historial de Ventas
+      </button>
+    </div>
+
+    <!-- TAB 0: PRICING & PLATFORMS MANAGEMENT -->
+    <div id="adminTabPrices" class="space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-purple-950/20 border border-purple-500/20 p-4 rounded-xl">
+        <div>
+          <h3 class="font-bold text-lg text-white flex items-center gap-2">
+            <i data-lucide="sliders" class="w-5 h-5 text-cyan-400"></i>
+            Control Total de Plataformas y Precios
+          </h3>
+          <p class="text-xs text-slate-400">
+            Cambia los precios aquí o añade plataformas nuevas sin tocar código. Se guardan al instante.
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openModal('addPlatformModal')" class="px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow active:scale-95">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> + Nueva Plataforma
+          </button>
+          <button onclick="exportDataBackup()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1 border border-slate-700" title="Descargar Copia de Respaldo">
+            <i data-lucide="hard-drive-download" class="w-4 h-4"></i> Respaldo
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/80 text-slate-300 font-semibold border-b border-slate-700">
+              <tr>
+                <th class="p-3.5">Plataforma</th>
+                <th class="p-3.5">Categoría</th>
+                <th class="p-3.5">Duración</th>
+                <th class="p-3.5">Stock Disponible</th>
+                <th class="p-3.5">Precio (MXN)</th>
+                <th class="p-3.5 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="adminPlatformsTableBody" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: STOCK INVENTORY -->
+    <div id="adminTabStock" class="hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-lg text-white">Inventario de Cuentas Cargadas (Stock 24/7)</h3>
+          <p class="text-xs text-slate-400">Credenciales listas para despachar en automático al momento de compra.</p>
+        </div>
+        <button onclick="openModal('addStockModal')" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow active:scale-95">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> + Cargar Cuenta
+        </button>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/80 text-slate-300 font-semibold border-b border-slate-700">
+              <tr>
+                <th class="p-3">Plataforma</th>
+                <th class="p-3">Correo / Usuario</th>
+                <th class="p-3">Contraseña</th>
+                <th class="p-3">Perfil & PIN</th>
+                <th class="p-3">Modalidad</th>
+                <th class="p-3">Estado</th>
+                <th class="p-3 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="adminStockTableBody" class="divide-y divide-slate-800 text-slate-300 font-mono"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CLIENTS & SPEI RECHARGES -->
+    <div id="adminTabUsers" class="hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-lg text-white">Gestión de Clientes y Asignación de Saldo</h3>
+          <p class="text-xs text-slate-400">Cuando un cliente mande su comprobante SPEI por WhatsApp, abónale su saldo aquí.</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/80 text-slate-300 font-semibold border-b border-slate-700">
+              <tr>
+                <th class="p-3">Cliente</th>
+                <th class="p-3">Teléfono / WhatsApp</th>
+                <th class="p-3">Saldo Actual</th>
+                <th class="p-3">Total Comprado</th>
+                <th class="p-3 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTableBody" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: EXPIRATION REMINDERS -->
+    <div id="adminTabReminders" class="hidden space-y-4">
+      <div class="bg-purple-950/30 border border-purple-500/20 p-4 rounded-xl flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-base text-white flex items-center gap-2">
+            <i data-lucide="message-square" class="w-5 h-5 text-emerald-400"></i>
+            Semáforo de Vencimientos y Cobro Automatizado
+          </h3>
+          <p class="text-xs text-slate-400">Haz clic en "Enviar WhatsApp" para abrir el chat con el mensaje de renovación listo.</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/80 text-slate-300 font-semibold border-b border-slate-700">
+              <tr>
+                <th class="p-3">Cliente</th>
+                <th class="p-3">Servicio</th>
+                <th class="p-3">Perfil</th>
+                <th class="p-3">Vencimiento</th>
+                <th class="p-3">Estado</th>
+                <th class="p-3 text-right">Cobro / WhatsApp</th>
+              </tr>
+            </thead>
+            <tbody id="adminRemindersTableBody" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SALES LOG -->
+    <div id="adminTabSales" class="hidden space-y-4">
+      <h3 class="font-bold text-lg text-white">Bitácora de Órdenes y Entregas</h3>
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/80 text-slate-300 font-semibold border-b border-slate-700">
+              <tr>
+                <th class="p-3">Fecha</th>
+                <th class="p-3">Cliente</th>
+                <th class="p-3">Plataforma</th>
+                <th class="p-3">Monto</th>
+                <th class="p-3">Credencial Entregada</th>
+                <th class="p-3">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="adminSalesTableBody" class="divide-y divide-slate-800 text-slate-300 font-mono"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!--                  MODALS                    -->
+  <!-- ========================================== -->
+
+  <!-- Modal: SPEI Recharge -->
+  <div id="rechargeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-5 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="building-2" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white">Recargar Saldo vía SPEI</h3>
+        </div>
+        <button onclick="closeModal('rechargeModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm">
+        <p class="text-slate-300">
+          Transfiere la cantidad a recargar a los siguientes datos:
+        </p>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2.5 font-mono text-xs">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Banco:</span>
+            <span class="font-bold text-white">STP / BBVA México</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Beneficiario:</span>
+            <span class="font-bold text-white">Samantha Streaming</span>
+          </div>
+          <div class="flex justify-between items-center bg-slate-950 p-2 rounded-lg border border-slate-800">
+            <div>
+              <span class="text-[10px] text-slate-500 block">CLABE Interbancaria (18 dígitos)</span>
+              <span id="clabeText" class="font-bold text-cyan-400 tracking-wider">646180123456789012</span>
+            </div>
+            <button onclick="copyToClipboard('646180123456789012', 'CLABE copiada')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs flex items-center gap-1 font-sans">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
+            </button>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Concepto / Referencia:</span>
+            <span id="speiReference" class="font-bold text-purple-400">SAM-7890</span>
+          </div>
+        </div>
+
+        <div class="bg-indigo-950/40 border border-indigo-500/30 p-3 rounded-xl text-xs text-indigo-200 flex gap-2">
+          <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5 text-indigo-400"></i>
+          <span>Una vez realizada tu transferencia, envía el comprobante por WhatsApp para acreditar tu saldo.</span>
+        </div>
+      </div>
+
+      <div class="pt-2 flex flex-col gap-2">
+        <a id="btnSendSpeiProof" target="_blank" href="https://wa.me/5212290000000?text=Hola,%20acabo%20de%20hacer%20una%20transferencia%20SPEI%20para%20recargar%20saldo%20en%20la%20tienda.%20Adjunto%20mi%20comprobante." class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-center text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          Enviar Comprobante por WhatsApp
+        </a>
+        <button onclick="closeModal('rechargeModal')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-xs transition">
+          Cerrar ventana
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Instant Delivery -->
+  <div id="deliveryModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-cyan-500/50 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative space-y-5 animate-in fade-in zoom-in-95 duration-150 neon-cyan">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-white">¡Compra Exitosa! Entrega Inmediata</h3>
+            <p class="text-xs text-slate-400">Tus credenciales están listas y activadas.</p>
+          </div>
+        </div>
+        <button onclick="closeModal('deliveryModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="deliveryDetailsBox" class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3 font-mono text-xs sm:text-sm"></div>
+
+      <div class="bg-amber-950/30 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200 flex items-start gap-2">
+        <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 text-amber-400 mt-0.5"></i>
+        <span><strong>Reglas de Uso:</strong> No modifiques la contraseña ni el correo para mantener la garantía. Usa únicamente tu perfil y PIN asignados.</span>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2.5 pt-1 font-sans">
+        <button id="btnCopyAllCreds" class="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow">
+          <i data-lucide="copy" class="w-4 h-4"></i> Copiar Datos
+        </button>
+        <button onclick="downloadVoucher()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2">
+          <i data-lucide="download" class="w-4 h-4"></i> Descargar Ficha (.txt)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Admin Add Stock -->
+  <div id="addStockModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-purple-400"></i>
+          Cargar Credencial al Stock
+        </h3>
+        <button onclick="closeModal('addStockModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="addStockForm" onsubmit="handleAdminAddStock(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Seleccionar Plataforma:</label>
+          <select id="stockPlatform" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-purple-500"></select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Correo / Usuario:</label>
+          <input type="text" id="stockEmail" required placeholder="ej. usuario@stream.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Contraseña:</label>
+          <input type="text" id="stockPass" required placeholder="Contraseña de la cuenta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">Perfil Asignado:</label>
+            <input type="text" id="stockProfile" placeholder="ej. Perfil 1" value="Perfil 1" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">PIN del Perfil:</label>
+            <input type="text" id="stockPin" placeholder="ej. 1234" value="1234" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-purple-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">Tipo de Cuenta:</label>
+            <select id="stockType" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-purple-500">
+              <option value="Perfil Privado con PIN">Perfil Privado con PIN</option>
+              <option value="Cuenta Completa">Cuenta Completa</option>
+              <option value="Pantalla Compartida">Pantalla Compartida</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">Días de Garantía:</label>
+            <input type="number" id="stockDays" value="30" min="1" max="365" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-purple-500">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full mt-3 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i> Guardar en Inventario 24/7
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Platform -->
+  <div id="addPlatformModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-cyan-500/40 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 id="platformModalTitle" class="font-bold text-lg text-white flex items-center gap-2">
+          <i data-lucide="tv" class="w-5 h-5 text-cyan-400"></i>
+          Añadir Plataforma al Catálogo
+        </h3>
+        <button onclick="closeModal('addPlatformModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="platformForm" onsubmit="handleSavePlatform(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="formPlatformEditId" value="">
+        
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Nombre de la Plataforma:</label>
+          <input type="text" id="formPlatformName" required placeholder="ej. Netflix Premium / Crunchyroll" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-400">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">Precio al Cliente (MXN):</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-400 font-bold">$</span>
+              <input type="number" id="formPlatformPrice" required step="1" min="1" placeholder="35" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-7 pr-2.5 py-2.5 text-white font-mono font-bold focus:outline-none focus:border-cyan-400">
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">Categoría:</label>
+            <select id="formPlatformCategory" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-400">
+              <option value="video">Películas & Series</option>
+              <option value="music">Música & Audio</option>
+              <option value="software">Software / IA / VPN</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">Texto Logo / Siglas:</label>
+            <input type="text" id="formPlatformLogoText" required maxlength="8" placeholder="ej. NETFLIX" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-400 font-mono">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1 font-semibold">Días de Servicio:</label>
+            <input type="number" id="formPlatformDays" value="30" min="1" max="365" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-cyan-400">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Distintivo Promocional:</label>
+          <input type="text" id="formPlatformBadge" placeholder="ej. 4K Ultra HD / Sin Anuncios" value="4K Ultra HD" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-400">
+        </div>
+
+        <button type="submit" class="w-full mt-3 py-2.5 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+          <i data-lucide="check" class="w-4 h-4"></i> Guardar Plataforma en Catálogo
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Balance -->
+  <div id="addBalanceModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl relative space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+          <i data-lucide="badge-dollar-sign" class="w-5 h-5 text-emerald-400"></i>
+          Abonar Saldo por SPEI
+        </h3>
+        <button onclick="closeModal('addBalanceModal')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-slate-400">Cliente seleccionado: <span id="targetClientName" class="font-bold text-white"></span></p>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Monto a abonar (MXN):</label>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-slate-400 font-bold">$</span>
+            <input type="number" id="inputAbonoAmount" step="5" min="5" value="35" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-7 pr-3 py-2.5 text-white font-mono font-bold text-base focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button type="button" onclick="setAbonoPreset(35)" class="flex-1 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-mono">$35</button>
+          <button type="button" onclick="setAbonoPreset(70)" class="flex-1 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-mono">$70</button>
+          <button type="button" onclick="setAbonoPreset(105)" class="flex-1 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-mono">$105</button>
+        </div>
+
+        <button onclick="confirmAbono()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 mt-2">
+          <i data-lucide="check" class="w-4 h-4"></i> Confirmar Recarga
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Admin PIN -->
+  <div id="adminPinModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-purple-500/50 w-full max-w-xs rounded-2xl p-5 shadow-2xl space-y-4">
+      <div class="text-center space-y-1">
+        <div class="w-10 h-10 bg-purple-500/10 text-purple-400 rounded-full flex items-center justify-center mx-auto">
+          <i data-lucide="lock" class="w-5 h-5"></i>
+        </div>
+        <h3 class="font-bold text-white text-base">Acceso Administrador</h3>
+        <p class="text-slate-400 text-xs">Clave de seguridad (Default: <span class="font-mono text-cyan-400">1234</span>)</p>
+      </div>
+
+      <div>
+        <input type="password" id="inputAdminPin" maxlength="6" placeholder="••••" class="w-full text-center tracking-widest text-lg font-mono py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-purple-500">
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeModal('adminPinModal')" class="flex-1 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl hover:bg-slate-700">Cancelar</button>
+        <button onclick="validateAdminPin()" class="flex-1 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-800/80 bg-[#0d1322] py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <i data-lucide="shield-alert" class="w-4 h-4 text-purple-400"></i>
+        <span>Garantía de reposición inmediata durante todo tu periodo activo.</span>
+      </div>
+      <div>
+        Atención y Soporte: <a href="https://wa.me/5212290000000" target="_blank" class="text-cyan-400 hover:underline">WhatsApp Oficial</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!--                 LOGIC JS                   -->
+  <!-- ========================================== -->
+  <script>
+    const STORAGE_KEY = 'STREAMING_SAMANTHA_HACKER_DATA_V1';
+
+    const DEFAULT_PLATFORMS = {
+      disney: { id: 'disney', name: 'Disney+ Premium', category: 'video', price: 35, duration: '30 días', days: 30, badge: '4K Ultra HD', iconBg: 'from-blue-600 to-indigo-900', logoText: 'Disney+' },
+      prime: { id: 'prime', name: 'Prime Video', category: 'video', price: 35, duration: '30 días', days: 30, badge: 'Multidispositivo', iconBg: 'from-cyan-600 to-blue-800', logoText: 'Prime' },
+      max: { id: 'max', name: 'Max (HBO Max)', category: 'video', price: 35, duration: '30 días', days: 30, badge: 'HBO Originals', iconBg: 'from-purple-700 to-indigo-950', logoText: 'MAX' },
+      paramount: { id: 'paramount', name: 'Paramount+', category: 'video', price: 35, duration: '30 días', days: 30, badge: 'Full HD', iconBg: 'from-blue-500 to-sky-700', logoText: 'Paramount+' },
+      vix: { id: 'vix', name: 'ViX Premium', category: 'video', price: 35, duration: '30 días', days: 30, badge: 'Liga MX & Novelas', iconBg: 'from-orange-600 to-red-800', logoText: 'ViX+' },
+      spotify: { id: 'spotify', name: 'Spotify Premium', category: 'music', price: 85, duration: '30 días', days: 30, badge: 'Sin Anuncios / Offline', iconBg: 'from-emerald-600 to-green-900', logoText: 'Spotify' },
+      youtube: { id: 'youtube', name: 'YouTube Premium', category: 'music', price: 35, duration: '30 días', days: 30, badge: 'YouTube + Music', iconBg: 'from-red-600 to-rose-900', logoText: 'YouTube' },
+      claro: { id: 'claro', name: 'Claro Video + Paramount', category: 'video', price: 35, duration: '30 días', days: 30, badge: 'Canales en Vivo', iconBg: 'from-rose-600 to-red-900', logoText: 'Claro' }
+    };
+
+    let PLATFORMS_CONFIG = { ...DEFAULT_PLATFORMS };
+    let adminUnlocked = false;
+
+    let state = {
+      currentClient: { id: 'cli_01', name: 'Cliente Principal', phone: '5212291234567', balance: 70 },
+      clients: [
+        { id: 'cli_01', name: 'Cliente Principal (Tú)', phone: '5212291234567', balance: 70, totalSpent: 105 },
+        { id: 'cli_02', name: 'Valeria Gómez', phone: '5212287654321', balance: 35, totalSpent: 140 },
+        { id: 'cli_03', name: 'Mateo Morales', phone: '5215541239874', balance: 0, totalSpent: 70 },
+        { id: 'cli_04', name: 'Andrea Ortiz', phone: '5218119874561', balance: 10, totalSpent: 210 }
+      ],
+      stock: [
+        { id: 'stk_1', platform: 'disney', email: 'disney.vip01@streamvault.com', pass: 'Vault#2026', profile: 'Perfil 1', pin: '4512', days: 30, type: 'Perfil Privado con PIN', status: 'available' },
+        { id: 'stk_2', platform: 'prime', email: 'prime.mex01@streamvault.com', pass: 'PrimeNov*77', profile: 'Perfil 1', pin: '1100', days: 30, type: 'Perfil Privado con PIN', status: 'available' },
+        { id: 'stk_3', platform: 'max', email: 'max.stream01@streamvault.com', pass: 'MaxPass99!', profile: 'Perfil 3', pin: '5566', days: 30, type: 'Perfil Privado con PIN', status: 'available' },
+        { id: 'stk_4', platform: 'spotify', email: 'spotify.fam01@streamvault.com', pass: 'MusicaDirecta!1', profile: 'Invitar Cuenta', pin: 'N/A', days: 30, type: 'Cuenta Completa', status: 'available' }
+      ],
+      sales: [
+        {
+          id: 'ord_101',
+          date: '2026-10-25 14:30',
+          clientId: 'cli_02',
+          clientName: 'Valeria Gómez',
+          clientPhone: '5212287654321',
+          platform: 'disney',
+          price: 35,
+          email: 'disney.vip00@streamvault.com',
+          pass: 'SafePass*11',
+          profile: 'Perfil 1',
+          pin: '7788',
+          purchaseDate: '2026-10-25',
+          expireDate: '2026-11-24',
+          status: 'Activa'
+        }
+      ],
+      lastPurchasedOrder: null,
+      selectedClientIdForAbono: null
+    };
+
+    function loadSavedData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.platforms) PLATFORMS_CONFIG = parsed.platforms;
+          if (parsed.state) state = parsed.state;
+        }
+      } catch (e) {
+        console.warn('Usando configuración por defecto', e);
+      }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          platforms: PLATFORMS_CONFIG,
+          state: state
+        }));
+      } catch (e) {
+        console.error('Error guardando en almacenamiento local', e);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedData();
+      populateStockPlatformSelect();
+      lucide.createIcons();
+      updateBalancesDisplay();
+      renderCatalog();
+      renderMySubscriptions();
+      renderAdminAll();
+    });
+
+    function requestAdminAccess() {
+      if (adminUnlocked) {
+        switchView('admin');
+      } else {
+        openModal('adminPinModal');
+      }
+    }
+
+    function validateAdminPin() {
+      const pin = document.getElementById('inputAdminPin').value;
+      if (pin === '1234') {
+        adminUnlocked = true;
+        closeModal('adminPinModal');
+        document.getElementById('inputAdminPin').value = '';
+        switchView('admin');
+        showToast('Acceso como Administrador concedido', 'success');
+      } else {
+        showToast('PIN incorrecto. (Default: 1234)', 'error');
+      }
+    }
+
+    function populateStockPlatformSelect() {
+      const select = document.getElementById('stockPlatform');
+      if (!select) return;
+      select.innerHTML = '';
+      Object.values(PLATFORMS_CONFIG).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.innerText = `${p.name} ($${p.price} MXN)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderAdminPlatformsTable() {
+      const tbody = document.getElementById('adminPlatformsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      Object.values(PLATFORMS_CONFIG).forEach(plat => {
+        const stockCount = state.stock.filter(s => s.platform === plat.id && s.status === 'available').length;
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="p-3.5 font-bold text-white flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br ${plat.iconBg || 'from-purple-600 to-indigo-800'} flex items-center justify-center font-bold text-[10px] text-white">
+              ${plat.logoText || plat.name.slice(0, 3)}
+            </div>
+            <div>
+              <span>${plat.name}</span>
+              <span class="block text-[10px] text-slate-400 font-normal">${plat.badge}</span>
+            </div>
+          </td>
+          <td class="p-3.5 text-slate-400 uppercase text-[10px] font-semibold">${plat.category}</td>
+          <td class="p-3.5 text-slate-300 font-mono">${plat.duration || plat.days + ' días'}</td>
+          <td class="p-3.5 font-mono">
+            <span class="px-2 py-0.5 rounded font-bold ${stockCount > 0 ? 'bg-cyan-500/20 text-cyan-300' : 'bg-rose-500/20 text-rose-300'}">
+              ${stockCount} cuentas
+            </span>
+          </td>
+          <td class="p-3.5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-bold">$</span>
+              <input type="number" step="1" value="${plat.price}" onchange="quickUpdatePrice('${plat.id}', this.value)" class="w-20 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-white font-mono font-bold focus:border-cyan-400 focus:outline-none">
+              <span class="text-slate-500 text-[10px]">MXN</span>
+            </div>
+          </td>
+          <td class="p-3.5 text-right space-x-1">
+            <button onclick="editPlatform('${plat.id}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded text-xs transition" title="Modificar Datos">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5 inline"></i>
+            </button>
+            <button onclick="deletePlatform('${plat.id}')" class="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 rounded text-xs transition border border-rose-800/40" title="Eliminar Plataforma">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5 inline"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function quickUpdatePrice(platformId, newPrice) {
+      const price = parseFloat(newPrice);
+      if (isNaN(price) || price <= 0) {
+        showToast('Ingresa un precio válido', 'error');
+        renderAdminPlatformsTable();
+        return;
+      }
+      if (PLATFORMS_CONFIG[platformId]) {
+        PLATFORMS_CONFIG[platformId].price = price;
+        saveData();
+        renderCatalog();
+        populateStockPlatformSelect();
+        showToast(`Precio de ${PLATFORMS_CONFIG[platformId].name} actualizado a $${price} MXN`, 'success');
+      }
+    }
+
+    function editPlatform(platformId) {
+      const p = PLATFORMS_CONFIG[platformId];
+      if (!p) return;
+      document.getElementById('platformModalTitle').innerText = 'Editar Plataforma / Precio';
+      document.getElementById('formPlatformEditId').value = p.id;
+      document.getElementById('formPlatformName').value = p.name;
+      document.getElementById('formPlatformPrice').value = p.price;
+      document.getElementById('formPlatformCategory').value = p.category || 'video';
+      document.getElementById('formPlatformLogoText').value = p.logoText || p.name.slice(0, 4);
+      document.getElementById('formPlatformDays').value = p.days || 30;
+      document.getElementById('formPlatformBadge').value = p.badge || 'Garantía Activa';
+      openModal('addPlatformModal');
+    }
+
+    function handleSavePlatform(e) {
+      e.preventDefault();
+      const editId = document.getElementById('formPlatformEditId').value.trim();
+      const name = document.getElementById('formPlatformName').value.trim();
+      const price = parseFloat(document.getElementById('formPlatformPrice').value);
+      const category = document.getElementById('formPlatformCategory').value;
+      const logoText = document.getElementById('formPlatformLogoText').value.trim();
+      const days = parseInt(document.getElementById('formPlatformDays').value) || 30;
+      const badge = document.getElementById('formPlatformBadge').value.trim() || 'Servicio 24/7';
+
+      const gradients = [
+        'from-purple-600 to-indigo-900',
+        'from-cyan-600 to-blue-800',
+        'from-rose-600 to-red-900',
+        'from-emerald-600 to-teal-900',
+        'from-amber-600 to-orange-800'
+      ];
+      const randomBg = gradients[Math.floor(Math.random() * gradients.length)];
+      const platId = editId || ('plat_' + Date.now());
+
+      PLATFORMS_CONFIG[platId] = {
+        id: platId,
+        name,
+        category,
+        price,
+        duration: `${days} días`,
+        days,
+        badge,
+        iconBg: (editId && PLATFORMS_CONFIG[editId]?.iconBg) ? PLATFORMS_CONFIG[editId].iconBg : randomBg,
+        logoText: logoText.toUpperCase()
+      };
+
+      saveData();
+      populateStockPlatformSelect();
+      renderCatalog();
+      renderAdminPlatformsTable();
+      closeModal('addPlatformModal');
+      document.getElementById('platformForm').reset();
+      document.getElementById('formPlatformEditId').value = '';
+      showToast('Plataforma guardada exitosamente', 'success');
+    }
+
+    function deletePlatform(platformId) {
+      const p = PLATFORMS_CONFIG[platformId];
+      if (!p) return;
+      delete PLATFORMS_CONFIG[platformId];
+      saveData();
+      populateStockPlatformSelect();
+      renderCatalog();
+      renderAdminPlatformsTable();
+      showToast(`Plataforma ${p.name} eliminada`, 'info');
+    }
+
+    function exportDataBackup() {
+      const backupData = JSON.stringify({ platforms: PLATFORMS_CONFIG, state: state }, null, 2);
+      const blob = new Blob([backupData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Backup_Streaming_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      showToast('Respaldo descargado', 'success');
+    }
+
+    let currentCategoryFilter = 'all';
+    function filterCatalog(category) {
+      currentCategoryFilter = category;
+      document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+        btn.classList.remove('bg-purple-600', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+      event?.target?.classList?.add('bg-purple-600', 'text-white');
+      event?.target?.classList?.remove('text-slate-400');
+      renderCatalog();
+    }
+
+    function renderCatalog() {
+      const grid = document.getElementById('catalogGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const platforms = Object.values(PLATFORMS_CONFIG).filter(p => {
+        if (currentCategoryFilter === 'all') return true;
+        return p.category === currentCategoryFilter;
+      });
+
+      platforms.forEach(p => {
+        const availableStock = state.stock.filter(s => s.platform === p.id && s.status === 'available').length;
+        const canBuy = state.currentClient.balance >= p.price && availableStock > 0;
+
+        const card = document.createElement('div');
+        card.className = "bg-slate-900/80 border border-slate-800 rounded-2xl p-5 hover:border-purple-500/50 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden";
+
+        card.innerHTML = `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${p.iconBg || 'from-purple-600 to-indigo-900'} flex items-center justify-center text-white font-extrabold text-xs shadow-lg tracking-wider">
+                ${p.logoText || p.name.slice(0, 4)}
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                ${p.badge}
+              </span>
+            </div>
+
+            <div>
+              <h3 class="font-bold text-base text-white group-hover:text-cyan-400 transition-colors">${p.name}</h3>
+              <p class="text-xs text-slate-400">Duración: <span class="text-slate-200 font-semibold">${p.duration || p.days + ' días'}</span></p>
+            </div>
+
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-white">$${p.price}</span>
+              <span class="text-xs text-slate-400 font-medium">MXN</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 text-xs">
+              <span class="w-2 h-2 rounded-full ${availableStock > 0 ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}"></span>
+              <span class="${availableStock > 0 ? 'text-emerald-400 font-medium' : 'text-rose-400'}">
+                ${availableStock > 0 ? `Stock disponible (${availableStock})` : 'Agotado temporalmente'}
+              </span>
+            </div>
+          </div>
+
+          <div class="pt-4 mt-2 border-t border-slate-800/80">
+            <button onclick="handlePurchase('${p.id}')" ${!canBuy ? (availableStock === 0 ? 'disabled' : '') : ''} class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
+              availableStock === 0 
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                : (state.currentClient.balance < p.price 
+                    ? 'bg-purple-950/60 text-purple-300 border border-purple-600/50 hover:bg-purple-900/60' 
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md active:scale-95')
+            }">
+              <i data-lucide="${availableStock === 0 ? 'slash' : (state.currentClient.balance < p.price ? 'plus-circle' : 'zap')}" class="w-4 h-4"></i>
+              <span>${availableStock === 0 ? 'Sin Stock' : (state.currentClient.balance < p.price ? 'Recargar para Comprar' : 'Comprar y Recibir')}</span>
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function handlePurchase(platformId) {
+      const p = PLATFORMS_CONFIG[platformId];
+      if (!p) return;
+
+      if (state.currentClient.balance < p.price) {
+        showToast(`Saldo insuficiente ($${state.currentClient.balance} MXN). Recarga vía SPEI.`, 'warning');
+        openModal('rechargeModal');
+        return;
+      }
+
+      const stockIdx = state.stock.findIndex(s => s.platform === platformId && s.status === 'available');
+      if (stockIdx === -1) {
+        showToast('Esta plataforma se ha agotado.', 'error');
+        return;
+      }
+
+      const assignedStock = state.stock[stockIdx];
+      assignedStock.status = 'sold';
+      state.currentClient.balance -= p.price;
+
+      const clientInList = state.clients.find(c => c.id === state.currentClient.id);
+      if (clientInList) {
+        clientInList.balance = state.currentClient.balance;
+        clientInList.totalSpent = (clientInList.totalSpent || 0) + p.price;
+      }
+
+      const now = new Date();
+      const expDate = new Date();
+      expDate.setDate(expDate.getDate() + (p.days || 30));
+
+      const newOrder = {
+        id: 'ord_' + Math.floor(1000 + Math.random() * 9000),
+        date: formatDate(now),
+        clientId: state.currentClient.id,
+        clientName: state.currentClient.name,
+        clientPhone: state.currentClient.phone,
+        platform: p.id,
+        price: p.price,
+        email: assignedStock.email,
+        pass: assignedStock.pass,
+        profile: assignedStock.profile,
+        pin: assignedStock.pin,
+        purchaseDate: now.toISOString().slice(0, 10),
+        expireDate: expDate.toISOString().slice(0, 10),
+        status: 'Activa'
+      };
+
+      state.sales.unshift(newOrder);
+      state.lastPurchasedOrder = newOrder;
+
+      saveData();
+      updateBalancesDisplay();
+      renderCatalog();
+      renderMySubscriptions();
+      renderAdminAll();
+
+      showDeliveryModal(newOrder);
+      showToast('¡Compra realizada con éxito! Cuenta despachada 24/7.', 'success');
+    }
+
+    function showDeliveryModal(order) {
+      const plat = PLATFORMS_CONFIG[order.platform];
+      const box = document.getElementById('deliveryDetailsBox');
+      box.innerHTML = `
+        <div class="text-cyan-400 font-bold text-sm pb-1 border-b border-slate-800 flex justify-between">
+          <span>${plat ? plat.name : order.platform}</span>
+          <span class="text-slate-400 font-normal text-xs">Vence: ${order.expireDate}</span>
+        </div>
+        <div class="space-y-1.5 pt-1 text-slate-200">
+          <div class="flex justify-between items-center bg-slate-950 p-2 rounded">
+            <span><strong>Correo:</strong> ${order.email}</span>
+            <button onclick="copyToClipboard('${order.email}', 'Correo copiado')" class="text-cyan-400 hover:text-cyan-300 text-xs">Copiar</button>
+          </div>
+          <div class="flex justify-between items-center bg-slate-950 p-2 rounded">
+            <span><strong>Contraseña:</strong> ${order.pass}</span>
+            <button onclick="copyToClipboard('${order.pass}', 'Contraseña copiada')" class="text-cyan-400 hover:text-cyan-300 text-xs">Copiar</button>
+          </div>
+          <div class="flex justify-between items-center bg-slate-950 p-2 rounded">
+            <span><strong>Perfil:</strong> ${order.profile}</span>
+            <span class="text-xs text-slate-400 font-sans">Uso Exclusivo</span>
+          </div>
+          <div class="flex justify-between items-center bg-slate-950 p-2 rounded">
+            <span><strong>PIN de Perfil:</strong> <span class="text-amber-400 font-bold">${order.pin}</span></span>
+            <button onclick="copyToClipboard('${order.pin}', 'PIN copiado')" class="text-cyan-400 hover:text-cyan-300 text-xs">Copiar</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnCopyAllCreds').onclick = () => {
+        const fullText = `Acceso ${plat ? plat.name : order.platform}\nCorreo: ${order.email}\nContraseña: ${order.pass}\nPerfil: ${order.profile}\nPIN: ${order.pin}\nVence: ${order.expireDate}`;
+        copyToClipboard(fullText, 'Todas las credenciales fueron copiadas');
+      };
+
+      openModal('deliveryModal');
+    }
+
+    function downloadVoucher() {
+      if (!state.lastPurchasedOrder) return;
+      const o = state.lastPurchasedOrder;
+      const plat = PLATFORMS_CONFIG[o.platform];
+      const text = `===============================\nFICHA DE ENTREGA - SAMANTHA LA HACKER\n===============================\nPlataforma: ${plat ? plat.name : o.platform}\nFecha de Compra: ${o.date}\nVigencia Hasta: ${o.expireDate}\n\nDATOS DE ACCESO:\nCorreo / Usuario: ${o.email}\nContraseña: ${o.pass}\nPerfil asignado: ${o.profile}\nPIN de seguridad: ${o.pin}\n\nIMPORTANTE:\n- No cambiar contraseña ni correo.\n- Usar únicamente tu perfil asignado.\n- Garantía activa 24/7 con tu ID de orden: ${o.id}\n===============================`;
+      
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Acceso_${plat ? plat.name.replace(/\s+/g, '_') : 'Streaming'}_${o.id}.txt`;
+      a.click();
+    }
+
+    function renderMySubscriptions() {
+      const list = document.getElementById('mySubscriptionsList');
+      if (!list) return;
+      const myOrders = state.sales.filter(s => s.clientId === state.currentClient.id);
+      document.getElementById('userSubCount').innerText = `${myOrders.length} Cuentas`;
+
+      if (myOrders.length === 0) {
+        list.innerHTML = `
+          <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-8 text-center text-slate-500 text-xs space-y-2">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-600"></i>
+            <p>Aún no has adquirido ninguna cuenta. ¡Recarga saldo y compra la que prefieras!</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      list.innerHTML = '';
+      myOrders.forEach(o => {
+        const plat = PLATFORMS_CONFIG[o.platform];
+        const daysLeft = calculateDaysRemaining(o.expireDate);
+        const card = document.createElement('div');
+        card.className = "bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${plat ? plat.iconBg : 'from-purple-600 to-indigo-900'} flex items-center justify-center text-white font-bold text-xs shrink-0">
+              ${plat ? (plat.logoText || plat.name.slice(0, 3)) : 'ACC'}
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="font-bold text-white text-sm">${plat ? plat.name : o.platform}</h4>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${daysLeft > 3 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/20 text-amber-300 animate-pulse'}">
+                  ${daysLeft > 0 ? `${daysLeft} días restantes` : 'Vencida'}
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 font-mono mt-0.5">
+                ${o.email} | <span class="text-purple-300 font-semibold">${o.profile}</span> (PIN: ${o.pin})
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+            <button onclick="copyToClipboard('${o.email} | ${o.pass}', 'Usuario y Contraseña copiados')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg transition flex items-center gap-1.5 font-medium">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Acceso
+            </button>
+            <button onclick="showDeliveryModal(state.sales.find(s => s.id === '${o.id}'))" class="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs rounded-lg transition font-medium">
+              Ver Ficha
+            </button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function updateBalancesDisplay() {
+      const b = `$${state.currentClient.balance.toFixed(2)} MXN`;
+      const navDisplay = document.getElementById('navBalanceDisplay');
+      const heroDisplay = document.getElementById('heroBalanceDisplay');
+      if (navDisplay) navDisplay.innerText = b;
+      if (heroDisplay) heroDisplay.innerText = b;
+    }
+
+    function switchView(view) {
+      const clientView = document.getElementById('clientView');
+      const adminView = document.getElementById('adminView');
+      const btnClient = document.getElementById('viewBtnClient');
+      const btnAdmin = document.getElementById('viewBtnAdmin');
+
+      if (view === 'client') {
+        clientView.classList.remove('hidden');
+        adminView.classList.add('hidden');
+        btnClient.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md";
+        btnAdmin.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-slate-200";
+        renderMySubscriptions();
+      } else {
+        clientView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+        btnAdmin.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md";
+        btnClient.className = "px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-slate-200";
+        renderAdminAll();
+      }
+      lucide.createIcons();
+    }
+
+    function switchAdminTab(tab) {
+      const tabs = ['prices', 'stock', 'users', 'reminders', 'sales'];
+      tabs.forEach(t => {
+        const tabEl = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const btnEl = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (t === tab) {
+          tabEl.classList.remove('hidden');
+          btnEl.className = "admin-tab active pb-3 font-semibold text-purple-400 border-b-2 border-purple-500 flex items-center gap-2 shrink-0";
+        } else {
+          tabEl.classList.add('hidden');
+          btnEl.className = "admin-tab pb-3 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent flex items-center gap-2 shrink-0";
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function renderAdminAll() {
+      renderAdminStats();
+      renderAdminPlatformsTable();
+      renderAdminStock();
+      renderAdminUsers();
+      renderAdminReminders();
+      renderAdminSales();
+    }
+
+    function renderAdminStats() {
+      const totalRev = state.sales.reduce((acc, curr) => acc + curr.price, 0);
+      const availableCount = state.stock.filter(s => s.status === 'available').length;
+      const expiringCount = state.sales.filter(s => {
+        const days = calculateDaysRemaining(s.expireDate);
+        return days >= 0 && days <= 3;
+      }).length;
+
+      const revEl = document.getElementById('adminStatRevenue');
+      const salesEl = document.getElementById('adminStatSalesCount');
+      const stockEl = document.getElementById('adminStatStockCount');
+      const alertsEl = document.getElementById('adminStatAlertsCount');
+
+      if (revEl) revEl.innerText = `$${totalRev} MXN`;
+      if (salesEl) salesEl.innerText = state.sales.length;
+      if (stockEl) stockEl.innerText = availableCount;
+      if (alertsEl) alertsEl.innerText = expiringCount;
+
+      const badge = document.getElementById('badgePendingAlerts');
+      if (badge) {
+        if (expiringCount > 0) {
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    function renderAdminStock() {
+      const tbody = document.getElementById('adminStockTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      state.stock.forEach(item => {
+        const plat = PLATFORMS_CONFIG[item.platform];
+        const isAvail = item.status === 'available';
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="p-3 font-sans font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full ${isAvail ? 'bg-cyan-400' : 'bg-slate-600'}"></span>
+            ${plat ? plat.name : item.platform}
+          </td>
+          <td class="p-3 text-slate-300">${item.email}</td>
+          <td class="p-3 text-emerald-400">${item.pass}</td>
+          <td class="p-3 text-slate-300 font-sans">${item.profile} (PIN: <span class="text-yellow-400 font-mono">${item.pin}</span>)</td>
+          <td class="p-3 font-sans text-slate-400">${item.type}</td>
+          <td class="p-3 font-sans">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isAvail ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-500'}">
+              ${isAvail ? 'En Stock 24/7' : 'Entregada'}
+            </span>
+          </td>
+          <td class="p-3 text-right">
+            ${isAvail ? `
+              <button onclick="deleteStockItem('${item.id}')" class="text-rose-400 hover:text-rose-300 p-1" title="Eliminar del stock">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            ` : '<span class="text-slate-600 text-xs">Despachada</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function handleAdminAddStock(e) {
+      e.preventDefault();
+      const platform = document.getElementById('stockPlatform').value;
+      const email = document.getElementById('stockEmail').value.trim();
+      const pass = document.getElementById('stockPass').value.trim();
+      const profile = document.getElementById('stockProfile').value.trim() || 'Perfil 1';
+      const pin = document.getElementById('stockPin').value.trim() || 'N/A';
+      const days = parseInt(document.getElementById('stockDays').value) || 30;
+      const type = document.getElementById('stockType').value;
+
+      const newStock = {
+        id: 'stk_' + Date.now(),
+        platform,
+        email,
+        pass,
+        profile,
+        pin,
+        days,
+        type,
+        status: 'available'
+      };
+
+      state.stock.unshift(newStock);
+      document.getElementById('addStockForm').reset();
+      closeModal('addStockModal');
+      showToast('Credencial agregada al stock 24/7', 'success');
+
+      renderAdminAll();
+      renderCatalog();
+    }
+
+    function deleteStockItem(id) {
+      state.stock = state.stock.filter(s => s.id !== id);
+      renderAdminAll();
+      renderCatalog();
+      showToast('Credencial retirada del stock', 'info');
+    }
+
+    function renderAdminUsers() {
+      const tbody = document.getElementById('adminUsersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      state.clients.forEach(client => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="p-3 font-medium text-white flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-purple-600/30 text-purple-300 flex items-center justify-center font-bold text-xs">
+              ${client.name.charAt(0)}
+            </div>
+            ${client.name}
+          </td>
+          <td class="p-3 text-slate-400 font-mono">${client.phone}</td>
+          <td class="p-3 font-bold text-emerald-400 font-mono">$${client.balance.toFixed(2)} MXN</td>
+          <td class="p-3 text-slate-300 font-mono">$${client.totalSpent || 0} MXN</td>
+          <td class="p-3 text-right">
+            <button onclick="openAbonoModal('${client.id}')" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 ml-auto shadow">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Abonar Saldo SPEI
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function openAbonoModal(clientId) {
+      const client = state.clients.find(c => c.id === clientId);
+      if (!client) return;
+      state.selectedClientIdForAbono = clientId;
+      document.getElementById('targetClientName').innerText = `${client.name} (${client.phone})`;
+      document.getElementById('inputAbonoAmount').value = '35';
+      openModal('addBalanceModal');
+    }
+
+    function setAbonoPreset(amount) {
+      document.getElementById('inputAbonoAmount').value = amount;
+    }
+
+    function confirmAbono() {
+      const amount = parseFloat(document.getElementById('inputAbonoAmount').value);
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Ingresa un monto válido.', 'warning');
+        return;
+      }
+
+      const client = state.clients.find(c => c.id === state.selectedClientIdForAbono);
+      if (!client) return;
+
+      client.balance += amount;
+
+      if (client.id === state.currentClient.id) {
+        state.currentClient.balance = client.balance;
+        updateBalancesDisplay();
+      }
+
+      closeModal('addBalanceModal');
+      renderAdminUsers();
+      renderCatalog();
+      showToast(`Se abonaron $${amount} MXN a ${client.name}`, 'success');
+    }
+
+    function renderAdminReminders() {
+      const tbody = document.getElementById('adminRemindersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      state.sales.forEach(sale => {
+        const plat = PLATFORMS_CONFIG[sale.platform];
+        const days = calculateDaysRemaining(sale.expireDate);
+
+        let badge = '';
+        if (days < 0) {
+          badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300">Vencida (${Math.abs(days)}d atrás)</span>`;
+        } else if (days <= 1) {
+          badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/30 text-rose-300 animate-pulse">¡Vence hoy/mañana!</span>`;
+        } else if (days <= 3) {
+          badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">Vence en ${days} días</span>`;
+        } else {
+          badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300">Vigente (${days} días)</span>`;
+        }
+
+        const clabe = "646180123456789012";
+        const message = `Hola ${sale.clientName}, tu servicio de *${plat ? plat.name : sale.platform}* (${sale.profile}) vence el *${sale.expireDate}*.\n\nPara renovar y no perder tu perfil ni historial, puedes transferir *$${sale.price} MXN* vía SPEI a:\n*Banco:* STP / BBVA\n*CLABE:* ${clabe}\n*Beneficiario:* Samantha Streaming\n\nAl enviar tu comprobante te recargamos de inmediato. ¡Gracias!`;
+        const waLink = `https://wa.me/${sale.clientPhone}?text=${encodeURIComponent(message)}`;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="p-3 font-medium text-white">
+            ${sale.clientName}
+            <span class="block text-[11px] text-slate-500 font-mono">${sale.clientPhone}</span>
+          </td>
+          <td class="p-3 font-bold text-slate-200">${plat ? plat.name : sale.platform}</td>
+          <td class="p-3 text-slate-400 font-mono">${sale.profile}</td>
+          <td class="p-3 font-mono font-bold text-cyan-400">${sale.expireDate}</td>
+          <td class="p-3">${badge}</td>
+          <td class="p-3 text-right">
+            <a href="${waLink}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+              <span>Enviar WhatsApp</span>
+            </a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function renderAdminSales() {
+      const tbody = document.getElementById('adminSalesTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      state.sales.forEach(order => {
+        const plat = PLATFORMS_CONFIG[order.platform];
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="p-3 text-slate-400">${order.date}</td>
+          <td class="p-3 font-sans text-white font-medium">${order.clientName}</td>
+          <td class="p-3 text-cyan-400 font-bold">${plat ? plat.name : order.platform}</td>
+          <td class="p-3 text-emerald-400 font-bold">$${order.price} MXN</td>
+          <td class="p-3 text-slate-300 font-mono text-[11px]">${order.email} | ${order.profile}</td>
+          <td class="p-3 font-sans">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300">Entregado 24/7</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function calculateDaysRemaining(expireDateStr) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const exp = new Date(expireDateStr);
+      exp.setHours(0, 0, 0, 0);
+      const diffTime = exp - today;
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function formatDate(date) {
+      const pad = n => n < 10 ? '0' + n : n;
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function copyToClipboard(text, successMsg = 'Copiado al portapapeles') {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast(successMsg, 'success');
+      } catch (err) {
+        showToast('Error al copiar', 'error');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let borderClass = 'border-purple-500/50';
+      let iconName = 'info';
+      let iconColor = 'text-purple-400';
+
+      if (type === 'success') {
+        borderClass = 'border-emerald-500/50';
+        iconName = 'check-circle';
+        iconColor = 'text-emerald-400';
+      } else if (type === 'warning') {
+        borderClass = 'border-amber-500/50';
+        iconName = 'alert-triangle';
+        iconColor = 'text-amber-400';
+      } else if (type === 'error') {
+        borderClass = 'border-rose-500/50';
+        iconName = 'x-circle';
+        iconColor = 'text-rose-400';
+      }
+
+      toast.className = `pointer-events-auto bg-slate-900/95 text-slate-100 px-4 py-3 rounded-xl border ${borderClass} shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-medium transition-all transform duration-300 translate-y-2 opacity-0 max-w-sm`;
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" class="w-4 h-4 ${iconColor} shrink-0"></i>
+        <span class="flex-1">${message}</span>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }, 4000);
+    }
+  </script>
+</body>
+</html>

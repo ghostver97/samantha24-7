@@ -1,0 +1,12 @@
+{
+  "name": "streaming-samantha-hacker",
+  "version": "1.0.0",
+  "description": "Tienda de Cuentas Streaming 24/7",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -s . -l $PORT"
+  },
+  "dependencies": {
+    "serve": "^14.2.4"
+  }
+}
